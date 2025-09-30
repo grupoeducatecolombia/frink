@@ -1,0 +1,35 @@
+
+<div class="w-screen flex justify-center">
+  <div class="w-4/5">
+
+    <div class="flex justify-center">
+      <h1>TITULO</h1>
+    </div>
+    <div class="flex justify-around items-center gap-3 p-3 w-full">
+      <label for="departamento">DEPARTAMENTO: </label>
+      <input class="flex-1 border rounded p-2" (change)="setDepartamento($event.target)">
+      <label for="departamento">MUNICIPIO: </label>
+      <input class="flex-1 border rounded p-2" (change)="setMunicipio($event.target)">
+      <label for="departamento">CODIGO: </label>
+      <input class="flex-1 border rounded p-2" (change)="setCodigo($event.target)">
+    </div>
+    <div class="flex justify-center items-center gap-3 p-3">
+      <label for="departamento">INSTITUCION: </label>
+      <input class="w-3/4 border rounded p-2" (change)="setinstitucion($event.target)">
+      <button class="px-4 py-2 bg-blue-600 text-white rounded" type="button" (click)="showDashboard()">CONSULTAR</button>
+    </div>
+  </div>
+</div>
+<div>
+  @if (dashboardShow) {
+    <div class="w-screen flex justify-center">
+
+      <div class="w-4/5">
+        <app-dashboard [institucion]="institucion" [municipio]="municipio" [departamento]="departamento" [codigo]="codigo">
+          
+        </app-dashboard>
+      </div>
+    </div>
+  }
+</div>
+

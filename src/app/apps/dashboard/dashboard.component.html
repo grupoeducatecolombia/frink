@@ -1,0 +1,60 @@
+<!-- <div id="tabla" style="width: 100%; height: 400px;"></div> -->
+
+<div class="w-full flex justify-center">
+  @for (periodo of periodos; track periodo) {
+    <label class="p-5">
+      <input
+        type="checkbox"
+        [checked]="periodosSeleccionados.has(periodo)"
+        (change)="onPeriodoChange(periodo, $event)"
+      />
+      {{ periodo }}
+    </label>
+  }
+  <button (click)="limpiarAnios()" class="px-4 py-2 bg-blue-600 text-white rounded" type="button">LIMPIAR AÑOS</button>
+</div>
+
+@if (datosFiltrados !== []){
+  <div>
+    <apx-chart
+      [series]="chartOptions.series || []"
+      [chart]="chartOptions.chart || { type: 'bar', height: 350 }"
+      [dataLabels]="chartOptions.dataLabels || { enabled: false }"
+      [plotOptions]="chartOptions.plotOptions || { bar: { horizontal: false } }"
+      [yaxis]="chartOptions.yaxis || {title: { text: 'Promedio' }, min: 0, max: 500,}"
+      [xaxis]="chartOptions.xaxis || { categories: [] }"
+      [fill]="chartOptions.fill || { type: 'solid' }"
+      [title]="chartOptions.title || {text: 'cargando...'}"
+    ></apx-chart>
+  </div>
+}
+
+<!-- <div class="flex justify-center">
+  <table>
+    <thead style="background: #00002d; color: white; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+      <tr>
+        @for (header of headers; track $index) {
+          <th >{{header}}</th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of datosFiltrados; track $index) {
+        <tr class="table-alternate">
+          @for (header of headers; track $index) {
+            @if(header === 'INSITTUCION'){
+              <td class="text-lext">{{ row[header] }}</td>
+            }@else {
+              @if (header === 'PROMEDIO') {
+                <td class="text-center">{{ row[header] | number:'1.0-1' }}</td>
+              }@else {
+                <td class="text-center">{{ row[header] }}</td>
+              }
+            }
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</div> -->
+
