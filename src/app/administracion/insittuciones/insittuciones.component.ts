@@ -18,7 +18,7 @@ export class InsittucionesComponent {
     // Obtener parámetro de la URL
     this.codigo = this.route.snapshot.paramMap.get('codigo');
 
-    // console.log('Código institución:', this.codigo);
+    console.log('Código institución:', this.codigo);
   }
 }
 

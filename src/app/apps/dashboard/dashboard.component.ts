@@ -66,10 +66,18 @@ export class DashboardComponent{
       fill: { type: 'solid' } // ✅ inicializado
     };
   }
+
+  
   
   headers: string[] = [];
   rowsData: any[] = []
   datosFiltrados: any[] = []
+
+  ngOnInit(): void {
+    if(this.dane){
+      this.getDatos()
+    }
+  }
 
   setInstitucion(name: any | null){
     if(!(name === null)){
@@ -124,34 +132,31 @@ export class DashboardComponent{
           return false
         }
         return (
-          (!this.codigo || row.DANE === this.codigo) &&
-          (!this.departamento || row.DEPARTAMENTO?.toUpperCase().includes(this.departamento.toUpperCase())) &&
-          (!this.municipio || row.MUNICIPIO?.toUpperCase().includes(this.municipio.toUpperCase())) &&
-          (!this.institucion || row.INSTITUCION?.toUpperCase().includes(this.institucion.toUpperCase()) &&
-          (this.periodosSeleccionados.size === 0 || this.periodosSeleccionados.has(row.PERIODO))
-        )
+          (!this.dane || row.DANE === this.dane) //&&
+          // (!this.departamento || row.DEPARTAMENTO?.toUpperCase().includes(this.departamento.toUpperCase())) &&
+          // (!this.municipio || row.MUNICIPIO?.toUpperCase().includes(this.municipio.toUpperCase())) &&
+          // (!this.institucion || row.INSTITUCION?.toUpperCase().includes(this.institucion.toUpperCase())) &&
+          // (this.periodosSeleccionados.size === 0 || this.periodosSeleccionados.has(row.PERIODO))
         );
       });
-      // console.log(filtrados)
 
       this.datosFiltrados = [...this.datosFiltrados, ...filtrados];
-      // console.log(this.datosFiltrados)
 
       index += batchSize;
 
       if (index < this.rowsData.length) {
         setTimeout(processBatch, 0); // Sigue con el siguiente lote
-        if(!this.periodosCargados){
-          this.cargarPeriodos()
-        }
       } else {
         // this.datosFiltrados = this.datosFiltrados.sort((a,b)=>{
-        //   return a.CODINST - b.CODINST || a.PERIODO - b.PERIODO
-        // } )
-        console.log("✅ Filtrado completo:", this.datosFiltrados.length);
+          //   return a.CODINST - b.CODINST || a.PERIODO - b.PERIODO
+          // } )
+          console.log("✅ Filtrado completo:", this.datosFiltrados.length);
           
-        if(this.datosFiltrados.length < 55){
-          this.graficoComparativo()
+          if(this.datosFiltrados.length < 55){
+            this.graficoComparativo()
+            if(!this.periodosCargados){
+              this.cargarPeriodos()
+            }
         }else{
           if(this.periodosCargados){
             Swal.fire({
@@ -217,6 +222,7 @@ export class DashboardComponent{
 
 
   graficoComparativo(){
+    console.log("datosFiltrados", this.datosFiltrados)
     const periodos: string[] = [];
     const seriesMap: { [institucion: string]: number[] } = {};
 
@@ -266,6 +272,7 @@ export class DashboardComponent{
       yaxis: {
         title: { text: "Promedio" },
         min: 0,
+        max: 500,
         labels: {
           formatter: (val) => val.toFixed(1)
         }

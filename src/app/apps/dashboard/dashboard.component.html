@@ -20,19 +20,19 @@
       </div>
     </div>
   </div>
+  <div class="w-full flex justify-center p-3">
+    <button class="px-4 py-2 bg-blue-600 text-white rounded" type="button" (click)="[getDatos(), limpiarAnios()]">CONSULTAR</button>
+  </div>
 }
 
 
-<div class="w-full flex justify-center p-3">
-  <button class="px-4 py-2 bg-blue-600 text-white rounded" type="button" (click)="[getDatos(), limpiarAnios()]">CONSULTAR</button>
-</div>
 
 <div class="p-3 flex mx-auto w-4/5 gap-5">
   <!-- Bloque de información -->
   <div class="w-1/2 flex flex-col justify-center text-white rounded text-center gap-6" style="background: #00002d; height: 300px;">
-    <h1> {{periodos}} </h1>
-    <h2> {{institucion}} </h2>
-    <h2> {{institucion}}</h2>
+    <h1> {{datosFiltrados[0].INSTITUCION}} </h1>
+    <h2> {{datosFiltrados[0].DANE}}</h2>
+    <h2> {{datosFiltrados[0].DEPARTAMENTO}} - {{datosFiltrados[0].NOMBREMUNICIPIO}} </h2>
   </div>
 
   <!-- Bloque del gráfico -->

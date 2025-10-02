@@ -239,6 +239,8 @@ export class AreasComponent implements OnChanges {
       yaxis: {
         title: { text: "Promedio" },
         min: 0,
+        max: 100,
+        tickAmount: 5,
         labels: {
           formatter: (val) => val.toFixed(1)
         }
