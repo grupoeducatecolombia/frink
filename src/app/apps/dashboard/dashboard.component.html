@@ -1,33 +1,66 @@
-<!-- <div id="tabla" style="width: 100%; height: 400px;"></div> -->
+@if(!dane){
 
-<div class="w-full flex justify-center">
-  @for (periodo of periodos; track periodo) {
-    <label class="p-5">
-      <input
-        type="checkbox"
-        [checked]="periodosSeleccionados.has(periodo)"
-        (change)="onPeriodoChange(periodo, $event)"
-      />
-      {{ periodo }}
-    </label>
-  }
-  <button (click)="limpiarAnios()" class="px-4 py-2 bg-blue-600 text-white rounded" type="button">LIMPIAR AÑOS</button>
+  <div class="w-screen flex justify-center">
+    <div class="w-4/5">
+  
+      <div class="flex justify-center">
+        <h1>TITULO</h1>
+      </div>
+      <div class="flex justify-around items-center gap-3 p-3 w-full">
+        <label for="departamento">DEPARTAMENTO: </label>
+        <input class="flex-1 border rounded p-2" (change)="setDepartamento($event.target)">
+        <label for="departamento">MUNICIPIO: </label>
+        <input class="flex-1 border rounded p-2" (change)="setMunicipio($event.target)">
+        <!-- <label for="departamento">CODIGO: </label>
+        <input class="flex-1 border rounded p-2" (change)="setCodigo($event.target)"> -->
+      </div>
+      <div class="flex justify-center items-center gap-3 p-3">
+        <label for="departamento">INSTITUCION: </label>
+        <input class="w-3/4 border rounded p-2" (change)="setInstitucion($event.target)">
+      </div>
+    </div>
+  </div>
+}
+
+
+<div class="w-full flex justify-center p-3">
+  <button class="px-4 py-2 bg-blue-600 text-white rounded" type="button" (click)="[getDatos(), limpiarAnios()]">CONSULTAR</button>
 </div>
 
-@if (datosFiltrados !== []){
-  <div>
+<div class="p-3 flex mx-auto w-4/5 gap-5">
+  <!-- Bloque de información -->
+  <div class="w-1/2 flex flex-col justify-center text-white rounded text-center gap-6" style="background: #00002d; height: 300px;">
+    <h1> {{periodos}} </h1>
+    <h2> {{institucion}} </h2>
+    <h2> {{institucion}}</h2>
+  </div>
+
+  <!-- Bloque del gráfico -->
+  <div class="w-1/2">
     <apx-chart
       [series]="chartOptions.series || []"
       [chart]="chartOptions.chart || { type: 'bar', height: 350 }"
       [dataLabels]="chartOptions.dataLabels || { enabled: false }"
       [plotOptions]="chartOptions.plotOptions || { bar: { horizontal: false } }"
-      [yaxis]="chartOptions.yaxis || {title: { text: 'Promedio' }, min: 0, max: 500,}"
+      [yaxis]="chartOptions.yaxis || {title: { text: 'Promedio' }, min: 0, max: 500}"
       [xaxis]="chartOptions.xaxis || { categories: [] }"
       [fill]="chartOptions.fill || { type: 'solid' }"
-      [title]="chartOptions.title || {text: 'cargando...'}"
+      [title]="chartOptions.title || {text: 'Esperando datos de consulta', align: 'center'}"
     ></apx-chart>
   </div>
-}
+</div>
+
+
+<div class="flex w-full justify-center">
+    <app-areas class="w-4/5" [datos]="datosFiltrados"></app-areas>
+</div>
+
+<div class="flex w-full justify-center">
+    <app-desviacion class="w-4/5"></app-desviacion>
+</div>
+<div class="flex w-full justify-center">
+    <app-comparativo class="w-4/5"></app-comparativo>
+</div>
 
 <!-- <div class="flex justify-center">
   <table>

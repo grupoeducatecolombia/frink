@@ -1,0 +1,12 @@
+<div class="p-3">
+    <apx-chart
+      [series]="chartOptions.series || []"
+      [chart]="chartOptions.chart || { type: 'bar', height: 350 }"
+      [dataLabels]="chartOptions.dataLabels || { enabled: false }"
+      [plotOptions]="chartOptions.plotOptions || { bar: { horizontal: false } }"
+      [yaxis]="chartOptions.yaxis || {title: { text: 'Promedio' }, min: 0, max: 500,}"
+      [xaxis]="chartOptions.xaxis || { categories: [] }"
+      [fill]="chartOptions.fill || { type: 'solid' }"
+      [title]="chartOptions.title || {text: 'Esperando datos de consulta', align: 'center'}"
+    ></apx-chart>
+</div>

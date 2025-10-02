@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { DashboardComponent } from "../../apps/dashboard/dashboard.component";
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-insittuciones',
@@ -9,35 +10,15 @@ import { DashboardComponent } from "../../apps/dashboard/dashboard.component";
   styleUrl: './insittuciones.component.css'
 })
 export class InsittucionesComponent {
-  departamento :string = ''
-  municipio: string= ''
-  institucion: string=''
-  codigo: string= ''
+  codigo: string | null = null;
 
-  dashboardShow: boolean = false
+  constructor(private route: ActivatedRoute) {}
 
-  setinstitucion(name: any | null){
-    if(!(name === null)){
-      this.institucion = name.value
-    }  }
-  setMunicipio(name: any | null){
-    if(!(name === null))
-    this.municipio = name.value
-  }
-  setDepartamento(name:  any | null){
-    if(!(name === null)){
-      this.departamento = name.value
-    }
-  }
+  ngOnInit(): void {
+    // Obtener parámetro de la URL
+    this.codigo = this.route.snapshot.paramMap.get('codigo');
 
-  setCodigo(name: any){
-    if(!(name === null)){
-      this.codigo = name.value
-    }
-  }
-
-  showDashboard(){
-    this.dashboardShow = true
+    // console.log('Código institución:', this.codigo);
   }
 }
 

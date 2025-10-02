@@ -1,6 +1,7 @@
-import { Component, Input, SimpleChanges, OnChanges, ViewChild} from '@angular/core';
+import { Component, ViewChild, Input} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgApexchartsModule, ApexAxisChartSeries, ApexChart, ChartComponent, ApexDataLabels, ApexPlotOptions, ApexYAxis, ApexTitleSubtitle, ApexXAxis, ApexFill } from "ng-apexcharts";
+import Swal, { SweetAlertResult } from "sweetalert2";
 
 
 // TABLAS
@@ -8,10 +9,13 @@ import * as echarts from 'echarts';
 
 // SERVICIOS
 import { CsvService } from '../../services/csv/csv.service';
+import { AreasComponent } from "./areas/areas.component";
+import { DesviacionComponent } from './desviacion/desviacion.component';
+import { ComparativoComponent } from './comparativo/comparativo.component';
 
 
 export type ChartOptions = {
-  series: ApexAxisChartSeries;
+  series: ApexAxisChartSeries |ApexAxisChartSeries;
   chart: ApexChart;
   dataLabels: ApexDataLabels;
   plotOptions: ApexPlotOptions;
@@ -24,27 +28,29 @@ export type ChartOptions = {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule,NgApexchartsModule],  // 👈 aquí
+  imports: [CommonModule, NgApexchartsModule, AreasComponent, AreasComponent, DesviacionComponent, ComparativoComponent],  // 👈 aquí
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
-export class DashboardComponent implements OnChanges{
+export class DashboardComponent{
+  @Input() dane : string | null = ''
   @ViewChild("chart") chart: ChartComponent | null = null;;
   public chartOptions: Partial<ChartOptions> = {};
 
-
-  @Input() departamento : string = ''
-  @Input() municipio: string = ''
-  @Input() institucion: string = ''
-  @Input() codigo: string = ''
+  departamento : string = ''
+  municipio: string = ''
+  institucion: string = ''
+  codigo: string = ''
   
-  periodos : string[] = [ '2020', '2021', '2022', '2023', '2024']
+  periodos : string[] = [ ]
   periodosCargados: boolean = false
   periodosSeleccionados: Set<string> = new Set(); // guardamos seleccionados en un Set
 
   constructor(
     private csvService: CsvService
   ){
+    this.limpiarAnios()
+    this.periodos = []
     this.chartOptions = {
       series: [{ name: 'Ventas', data: [] }],
       chart: { type: 'bar', height: 350 },
@@ -64,15 +70,26 @@ export class DashboardComponent implements OnChanges{
   headers: string[] = [];
   rowsData: any[] = []
   datosFiltrados: any[] = []
-  
-  
-  ngOnChanges(changes: SimpleChanges) {
-    // console.log('Cambios detectados:', changes);
-    this.getDatos(); // vuelve a filtrar cuando cambia un input
-    
+
+  setInstitucion(name: any | null){
+    if(!(name === null)){
+      this.institucion = name.value
+    }  }
+  setMunicipio(name: any | null){
+    if(!(name === null))
+    this.municipio = name.value
+  }
+  setDepartamento(name:  any | null){
+    if(!(name === null)){
+      this.departamento = name.value
+    }
   }
 
-
+  setCodigo(name: any){
+    if(!(name === null)){
+      this.codigo = name.value
+    }
+  }
   
   getDatos(): void {
     this.headers = ['CODINST','INSTITUCION', 'MUNICIPIO', 'PERIODO', 'PROMEDIO', 'PROM. LECTURA', 'PROM. MATEMATICAS', 'PROM. SOCIALES', 'PROM. NATURALES', 'PROM. INGLES']
@@ -107,6 +124,7 @@ export class DashboardComponent implements OnChanges{
           return false
         }
         return (
+          (!this.codigo || row.DANE === this.codigo) &&
           (!this.departamento || row.DEPARTAMENTO?.toUpperCase().includes(this.departamento.toUpperCase())) &&
           (!this.municipio || row.MUNICIPIO?.toUpperCase().includes(this.municipio.toUpperCase())) &&
           (!this.institucion || row.INSTITUCION?.toUpperCase().includes(this.institucion.toUpperCase()) &&
@@ -132,13 +150,20 @@ export class DashboardComponent implements OnChanges{
         // } )
         console.log("✅ Filtrado completo:", this.datosFiltrados.length);
           
-        // if(this.datosFiltrados.length < 6){
-        //   this.cargarGafricos('institucion')
-        // }else if(this.datosFiltrados.length < 100){
-          this.cargarGafricos('comparativo')
-        // }else{
-          //agregregar mensaje de error por exceso de datos
-        // }
+        if(this.datosFiltrados.length < 55){
+          this.graficoComparativo()
+        }else{
+          if(this.periodosCargados){
+            Swal.fire({
+              title: 'DEMASIADOS COLEGIOS PARA MOSTRAR',
+              html: `
+                <p>Se encontraron demasiados colegios que cumplen el criterio</p>
+                <p>Favor ser mas especifico en los filtros</p>
+              `,
+              icon: 'warning',
+            })
+          }
+        }
         this.finalizarCargarPeriodos()
       }
     };
@@ -169,29 +194,16 @@ export class DashboardComponent implements OnChanges{
 
   limpiarAnios(){
     this.periodosSeleccionados =new Set()
+    this.periodosCargados = false
     this.applyFilters()
   }
 
-  cargarGafricos(tipo:string){
+  cargarGrafricos(tipo:string){
     switch (tipo){
-      case "institucion":
-        this.grafricoInstitucion()
-        break;
       case "comparativo":
         this.graficoComparativo()
         break
     }
-  }
-
-  actualizarGrafico(nuevosPeriodos: string[], nuevosPromedios: number[]) {
-    this.chart?.updateOptions({
-      xaxis: { categories: nuevosPeriodos },
-      title: { text: 'Promedios actualizados', align: 'center' }
-    });
-
-    this.chart?.updateSeries([
-      { name: "Promedio", data: nuevosPromedios }
-    ]);
   }
 
   actualizarGraficoComparativo(nuevosPeriodos: string[], nuevasSeries: { name: string; data: number[] }[]) {
@@ -201,54 +213,6 @@ export class DashboardComponent implements OnChanges{
     });
 
     this.chart?.updateSeries(nuevasSeries);
-  }
-
-  grafricoInstitucion() {
-    let promedios: number[] = [];
-    let periodos: string[] = [];
-
-    this.datosFiltrados.forEach(dato => {
-      const promedio = Number(dato.PROMEDIO);
-      // if (!isNaN(promedio)) {
-        // console.log('hola')
-        promedios.push(promedio);
-        periodos.push(String(dato.PERIODO || ''));
-      // }
-    });
-    // console.log('periodos', periodos, 'promedios', promedios)
-    this.chartOptions = {
-      series: [
-        {
-          name: "Promedio",
-          data: promedios
-        }
-      ],
-      chart: {
-        type: "bar",
-        height: 350
-      },
-      title: {
-        text: this.datosFiltrados[0].INSTITUCION
-      },
-      xaxis:{
-        title: { text: "Periodo" },
-        categories: periodos
-      },
-      yaxis: {
-        title: { text: "Promedio" },
-        min: 0,
-        max: 500,
-        labels: {
-          formatter: (val) => val.toFixed(1)// muestra solo 2 decimales en el eje Y
-        }
-      },
-      tooltip: {
-        y: {
-          formatter: (val) => val.toFixed(1) // tooltip también con 2 decimales
-        }
-      }
-    };
-    this.actualizarGrafico(periodos, promedios)
   }
 
 
@@ -293,7 +257,7 @@ export class DashboardComponent implements OnChanges{
         height: 350
       },
       title: {
-        text: "COMPARATIVO"
+        text: "COMPARATIVO", align: 'center'
       },
       xaxis: {
         title: { text: "Periodo" },
@@ -320,18 +284,5 @@ export class DashboardComponent implements OnChanges{
 
       this.actualizarGraficoComparativo(periodos, seriesArray)
     },200);
-  }
-
-  graficoDepartamento(){
-    const chartDom = document.getElementById('tabla')!;
-    const myChart = echarts.init(chartDom);
-    const option = {
-      title: { text: 'DEPARTAMENTO' },
-      tooltip: {},
-      xAxis: { data: ['A', 'B', 'C', 'D'] },
-      yAxis: {},
-      series: [{ type: 'bar', data: [5, 20, 36, 10] }]
-    };
-    myChart.setOption(option);
   }
 }
