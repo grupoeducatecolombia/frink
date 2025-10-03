@@ -1,39 +1,46 @@
-<div class="p-3">
-  <div class="p-3 fles justify-center">
-    @for (area of areas; track $index) {
-      <button (click)="seleccionarArea(area)" [ngClass]="area === areasbotonSeccionado ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'" class="px-4 py-2 rounded m-1">
-        {{ area }}
+<div class="w-full">
+  <!-- Selector de Áreas -->
+  <div class="flex flex-wrap justify-center gap-3 mb-6">
+    @for (area of areas; track area) {
+      <button 
+        (click)="seleccionarArea(area)"
+        [class.bg-blue-600]="areaSeleccionada === area"
+        [class.bg-gray-200]="areaSeleccionada !== area"
+        [class.text-white]="areaSeleccionada === area"
+        [class.text-gray-700]="areaSeleccionada !== area"
+        class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-md"
+      >
+        <span class="mr-1">
+          @switch (area) {
+            @case ('MATEMATICAS') { 📊 }
+            @case ('LECTURA') { 📚 }
+            @case ('NATURALES') { 🔬 }
+            @case ('SOCIALES') { 🌍 }
+            @case ('INGLES') { 🗣️ }
+          }
+        </span>
+        {{area}}
       </button>
     }
   </div>
-  <div>
 
+  <!-- Gráfico -->
+  <div class="relative">
     <apx-chart
-      [series]="chartOptions.series || []"
-      [chart]="chartOptions.chart || { type: 'bar', height: 350 }"
-      [plotOptions]="chartOptions.plotOptions || { bar: { horizontal: true } }"
-      [yaxis]="chartOptions.yaxis || {title: { text: 'Promedio' }, min: 0, max: 500,}"
-      [xaxis]="chartOptions.xaxis || { categories: [] }"
-      [fill]="chartOptions.fill || { type: 'solid' }"
-      [title]="chartOptions.title || {text: 'Esperando datos de consulta', align: 'center'}"
-      [dataLabels]="commonOptions.dataLabels || { enabled: true }"
-      [markers]="commonOptions.markers"
-      [stroke]="commonOptions.stroke"
-      [grid]="commonOptions.grid"
-      [tooltip]="commonOptions.tooltip || { enabled: true }"
+      [series]="chartOptions['series'] || []"
+      [chart]="chartOptions['chart']"
+      [colors]="chartOptions['colors']"
+      [stroke]="chartOptions['stroke']"
+      [markers]="chartOptions['markers']"
+      [fill]="chartOptions['fill']"
+      [states]="chartOptions['states']"
+      [dataLabels]="chartOptions['dataLabels']"
+      [grid]="chartOptions['grid']"
+      [xaxis]="chartOptions['xaxis']"
+      [yaxis]="chartOptions['yaxis']"
+      [tooltip]="chartOptions['tooltip']"
     ></apx-chart>
-<!-- 
-    <apx-chart
-      [series]="chart3options.series || []"
-      [chart]="chart3options.chart || { type: 'area', height: 160 }"
-      [colors]="chart3options.colors || ['#00E396']"
-      [yaxis]="chart3options.yaxis || {}"
-      [dataLabels]="commonOptions.dataLabels || { enabled: false }"
-      [markers]="commonOptions.markers"
-      [stroke]="commonOptions.stroke"
-      [grid]="commonOptions.grid"
-      [xaxis]="commonOptions.xaxis || { type: 'datetime' }"
-      [tooltip]="commonOptions.tooltip || { enabled: true }"
-    ></apx-chart> -->
   </div>
+  
+  <app-areas-periodos [datos]="datos"></app-areas-periodos>
 </div>

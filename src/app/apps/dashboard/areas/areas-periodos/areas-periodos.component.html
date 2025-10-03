@@ -1,0 +1,36 @@
+<div class="w-full">
+  <!-- Selector de Períodos -->
+  <div class="flex flex-wrap justify-center gap-3 mb-6">
+    @for (periodo of periodos; track periodo) {
+      <button 
+        (click)="seleccionarPeriodo(periodo)"
+        [class.bg-blue-600]="periodoSeleccionado === periodo"
+        [class.bg-gray-200]="periodoSeleccionado !== periodo"
+        [class.text-white]="periodoSeleccionado === periodo"
+        [class.text-gray-700]="periodoSeleccionado !== periodo"
+        class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-md"
+      >
+        {{periodo}}
+      </button>
+    }
+  </div>
+
+  <!-- Gráfico -->
+  <div class="relative">
+    <apx-chart
+      [series]="chartOptions['series'] || []"
+      [chart]="chartOptions['chart']"
+      [colors]="chartOptions['colors']"
+      [plotOptions]="chartOptions['plotOptions']"
+      [dataLabels]="chartOptions['dataLabels']"
+      [stroke]="chartOptions['stroke']"
+      [markers]="chartOptions['markers']"
+      [grid]="chartOptions['grid']"
+      [title]="chartOptions['title']"
+      [xaxis]="chartOptions['xaxis']"
+      [yaxis]="chartOptions['yaxis']"
+      [fill]="chartOptions['fill']"
+      [tooltip]="chartOptions['tooltip']"
+    ></apx-chart>
+  </div>
+</div>

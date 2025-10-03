@@ -1,8 +1,8 @@
-import { Component, ViewChild, Input} from '@angular/core';
+import { Component, ViewChild, Input, OnChanges} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgApexchartsModule, ApexAxisChartSeries, ApexChart, ChartComponent, ApexDataLabels, ApexPlotOptions, ApexYAxis, ApexTitleSubtitle, ApexXAxis, ApexFill } from "ng-apexcharts";
+import { NgApexchartsModule, ChartComponent} from "ng-apexcharts";
 import Swal, { SweetAlertResult } from "sweetalert2";
-
+import { theme } from '../../config/chart-theme';
 
 // TABLAS
 import * as echarts from 'echarts';
@@ -12,40 +12,17 @@ import { CsvService } from '../../services/csv/csv.service';
 import { AreasComponent } from "./areas/areas.component";
 import { DesviacionComponent } from './desviacion/desviacion.component';
 import { ComparativoComponent } from './comparativo/comparativo.component';
+import { ChartOptions } from '../../models/chart/chart-option';
 
-
-export type ChartOptions = {
-  series: ApexAxisChartSeries |ApexAxisChartSeries;
-  chart: ApexChart;
-  dataLabels: ApexDataLabels;
-  plotOptions: ApexPlotOptions;
-  yaxis: ApexYAxis;
-  xaxis: ApexXAxis;
-  fill: ApexFill;
-  title: ApexTitleSubtitle;
-  tooltip: ApexTooltip;
-};
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, NgApexchartsModule, AreasComponent, AreasComponent, DesviacionComponent, ComparativoComponent],  // 👈 aquí
+  imports: [CommonModule, NgApexchartsModule, AreasComponent, AreasComponent, DesviacionComponent],  // 👈 aquí
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
-export class DashboardComponent{
-  @Input() dane : string | null = ''
-  @ViewChild("chart") chart: ChartComponent | null = null;;
-  public chartOptions: Partial<ChartOptions> = {};
-
-  departamento : string = ''
-  municipio: string = ''
-  institucion: string = ''
-  codigo: string = ''
-  
-  periodos : string[] = [ ]
-  periodosCargados: boolean = false
-  periodosSeleccionados: Set<string> = new Set(); // guardamos seleccionados en un Set
-
+export class DashboardComponent implements OnChanges{
+  theme = theme
   constructor(
     private csvService: CsvService
   ){
@@ -63,17 +40,75 @@ export class DashboardComponent{
           formatter: (val) => val.toFixed(2) // tooltip también con 2 decimales
         }
       },
-      fill: { type: 'solid' } // ✅ inicializado
+      fill: { type: 'solid' }, // ✅ inicializado
+      colors: ['#4ECDC4', '#FF6B6B', '#FFE66D'],
+      stroke: {
+        width: [2, 3, 2],
+        curve: 'smooth'
+      },
+      markers: {
+        size: [4, 5, 4],
+        hover: {
+          size: 7
+        }
+      }
     };
   }
+  @Input() dane : string | null = ''
+  @ViewChild("chart") chart: ChartComponent | null = null;;
+  public chartOptions: Partial<ChartOptions> = {
+    series: [],
+    chart: {
+      type: 'line',
+      height: 350,
+      toolbar: {
+        show: true
+      }
+    },
+    ...theme.chart, // Aplicar configuración común
+    title: {
+      text: 'Título del gráfico',
+      align: 'center',
+      style: {
+        fontSize: '18px',
+        fontWeight: 'bold',
+        color: theme.colors.text.primary
+      }
+    },
+  };
+
+  departamento : string = ''
+  municipio: string = ''
+  institucion: string = ''
+  codigo: string = ''
+  
+  periodos : string[] = [ ]
+  periodosCargados: boolean = false
+  periodosSeleccionados: Set<string> = new Set(); // guardamos seleccionados en un Set
+
+  
 
   
   
   headers: string[] = [];
   rowsData: any[] = []
   datosFiltrados: any[] = []
+  datosFInales: any[] = []
+
+  // Información institución
+  nombreInstitucion: string = ''
+  codigoDane: string = ''
+  nombreDepartamento: string = ''
+  nombreMunicipio: string = ''
 
   ngOnInit(): void {
+    if(this.dane){
+      this.getDatos()
+    }
+  }
+
+  ngOnChanges() {
+    // Este método se llamará cuando cambien las propiedades de entrada
     if(this.dane){
       this.getDatos()
     }
@@ -153,6 +188,10 @@ export class DashboardComponent{
           console.log("✅ Filtrado completo:", this.datosFiltrados.length);
           
           if(this.datosFiltrados.length < 55){
+            this.nombreInstitucion = this.datosFiltrados[0]?.INSTITUCION || ''
+            this.codigoDane = this.datosFiltrados[0]?.DANE || ''
+            this.nombreDepartamento = this.datosFiltrados[0]?.DEPARTAMENTO || ''
+            this.nombreMunicipio = this.datosFiltrados[0]?.NOMBREMUNICIPIO || ''
             this.graficoComparativo()
             if(!this.periodosCargados){
               this.cargarPeriodos()
@@ -211,7 +250,7 @@ export class DashboardComponent{
     }
   }
 
-  actualizarGraficoComparativo(nuevosPeriodos: string[], nuevasSeries: { name: string; data: number[] }[]) {
+  actualizarGraficoComparativo(nuevosPeriodos: string[], nuevasSeries: { name: string;    data: number[] }[]) {
     this.chart?.updateOptions({
       xaxis: { categories: nuevosPeriodos },
       title: { text: 'Promedios', align: 'center' }
@@ -233,7 +272,6 @@ export class DashboardComponent{
         periodos.push(periodo);
       }
     });
-
     // 2. llenar series por institución
     this.datosFiltrados.forEach(dato => {
       const institucion = dato.INSTITUCION;
@@ -254,23 +292,64 @@ export class DashboardComponent{
       name: inst,
       data: seriesMap[inst]
     }));
-
     // 4. setear chartOptions
     this.chartOptions = {
       series: series,
       chart: {
         type: "bar",
-        height: 350
+        height: 450,
+        toolbar: {
+          show: true
+        }
+      },
+      colors: ['#4ECDC4', '#FF6B6B', '#FFE66D'],
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: '55%',
+          borderRadius: 5
+        },
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: function (val: number) {
+          return val.toFixed(1);
+        }
+      },
+      stroke: {
+        show: true,
+        width: 2,
+        colors: ['transparent']
+      },
+      markers: {
+        size: 4,
+        hover: {
+          size: 7
+        }
+      },
+      grid: {
+        show: true,
+        borderColor: '#e5e7eb',
+        strokeDashArray: 4
       },
       title: {
-        text: "COMPARATIVO", align: 'center'
+        text: 'Promedios por Institución',
+        align: 'center',
+        style: {
+          fontSize: '18px',
+          fontWeight: 'bold'
+        }
       },
       xaxis: {
-        title: { text: "Periodo" },
+        title: { 
+          text: "Periodo" 
+        },
         categories: periodos
       },
       yaxis: {
-        title: { text: "Promedio" },
+        title: { 
+          text: "Promedio" 
+        },
         min: 0,
         max: 500,
         labels: {
@@ -288,8 +367,8 @@ export class DashboardComponent{
       data: seriesMap[institucion]
     }));
     setTimeout(()=>{
-
       this.actualizarGraficoComparativo(periodos, seriesArray)
+      this.datosFInales = this.datosFiltrados
     },200);
   }
 }

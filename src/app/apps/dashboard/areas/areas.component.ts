@@ -1,277 +1,151 @@
-import { Component, ViewChild, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgApexchartsModule, ApexAxisChartSeries, ApexChart, ChartComponent, ApexDataLabels, ApexPlotOptions, ApexYAxis, ApexTitleSubtitle, ApexXAxis, ApexFill, ApexTooltip } from "ng-apexcharts";
-
-export type ChartOptions = {
-  series: ApexAxisChartSeries;
-  chart: ApexChart;
-  dataLabels: ApexDataLabels;
-  plotOptions: ApexPlotOptions;
-  yaxis: ApexYAxis;
-  xaxis: ApexXAxis;
-  fill: ApexFill;
-  title: ApexTitleSubtitle;
-  tooltip: ApexTooltip;
-  stroke: any;
-  toolbar: any;
-  markers: any;
-  grid: any;
-  colors: string[];
-};
+import { NgApexchartsModule, ChartComponent } from 'ng-apexcharts';
+import { AreasPeriodosComponent } from './areas-periodos/areas-periodos.component';
 
 @Component({
   selector: 'app-areas',
   standalone: true,
-  imports: [CommonModule, NgApexchartsModule],
+  imports: [CommonModule, NgApexchartsModule, AreasPeriodosComponent],
   templateUrl: './areas.component.html',
   styleUrl: './areas.component.css'
 })
 export class AreasComponent implements OnChanges {
   @Input() datos: any[] = [];
-  @ViewChild("chart") chart: ChartComponent | null = null;
-  public chartOptions: Partial<ChartOptions> = {};
-  public chart3options: Partial<ChartOptions> = {};
-  public commonOptions: Partial<ChartOptions> = {};
-
-  areas: string[] = ['MATEMATICAS', 'LECTURA', 'NATURALES', 'SOCIALES', 'INGLES'];
-  areasbotonSeccionado: string = ''
-  areaSeleccionada: string = ''
-
-  datosfiltrados: any[] = []
-
+  @ViewChild('chart') chart: ChartComponent | undefined;
+  
+  public chartOptions: Partial<any> = {};
+  public areas: string[] = ['MATEMATICAS', 'LECTURA', 'NATURALES', 'SOCIALES', 'INGLES'];
+  public areaSeleccionada: string = 'PROM. MATEMATICAS'; // Cambiado para incluir el prefijo
+  public areasbotonSeccionado: string = 'MATEMATICAS';
+  public datosfiltrados: any[] = [];
 
   constructor() {
-    this.areasbotonSeccionado = 'MATEMATICAS';
-    this.areaSeleccionada= 'PROM. MATEMATICAS'
-    this.commonOptions = {
-      dataLabels: {
-        enabled: false
-      },
-      stroke: {
-        curve: "straight"
-      },
-      toolbar: {
-        tools: {
-          selection: false
-        }
-      },
-      markers: {
-        size: 6,
-        hover: {
-          size: 10
-        }
-      },
-      tooltip: {
-        followCursor: false,
-        theme: "dark",
-        x: {
-          show: false
-        },
-        marker: {
-          show: false
-        },
-        y: {
-          title: {
-            formatter: function() {
-              return "";
-            }
-          }
-        }
-      },
-      grid: {
-        clipMarkers: false
-      },
-      xaxis: {
-        type: "datetime"
-      }
-    };
-    this.chartOptions = {
-      series: [{ name: 'Ventas', data: [] }],
-      chart: { type: 'bar', height: 350 },
-      dataLabels: { enabled: true },
-      yaxis: { title: { text: 'cargando...' } },
-      title: { text: 'cargando...', align: 'center' },
-      xaxis: { categories: [] },
-      tooltip: {
-        y: {
-          formatter: (val) => val.toFixed(2)
-        }
-      },
-      fill: { type: 'solid' }
-    };
-    this.chart3options = {series: [{ name: 'Ventas', data: [] }],
-      chart: { type: 'bar', height: 350 },
-      dataLabels: { enabled: true },
-      yaxis: { title: { text: 'cargando...' } },
-      title: { text: 'cargando...', align: 'center' },
-      xaxis: { categories: [] },
-      tooltip: {
-        y: {
-          formatter: (val) => val.toFixed(2)
-        }
-      },
-      fill: { type: 'gradient' }
-    };
+    this.inicializarGrafico();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['datos'] && this.datos) {
-      this.applyFilters();
-      // this.graficoComparativo();
+      console.log('Datos recibidos:', this.datos); // Debug
+      this.datosfiltrados = [...this.datos];
+      this.graficoComparativo();
     }
   }
 
-  seleccionarArea(area:string){
+  seleccionarArea(area: string): void {
     this.areasbotonSeccionado = area;
     this.areaSeleccionada = `PROM. ${area}`;
-    this.applyFilters();
-  }
-
-  applyFilters() {
-    this.chartOptions= {}
-    const batchSize = 1000;   
-    let index = 0;
-
-    const filtrados = this.datos.filter((row: any) => {
-      // console.log('row', row)
-      // if (row.PROMEDIO === ''){
-      //   return false
-      // }
-      // const filtro = `PROM. ${this.areaSeleccionada}`;
-      return (
-        !this.areaSeleccionada || (row[this.areaSeleccionada] !== undefined && row[this.areaSeleccionada] !== null)
-      );
-    });
-    // console.log(filtrados)
-
-    this.datosfiltrados = [...this.datosfiltrados, ...filtrados];
-    // console.log(this.datos)
-
-    index += batchSize;
+    console.log('Área seleccionada:', this.areaSeleccionada); // Debug
     this.graficoComparativo();
-  };
-  
-    
-
-  actualizarGraficoComparativo(nuevosPeriodos: string[], nuevasSeries: { name: string; data: number[] }[]) {
-    this.chart?.updateOptions({
-      xaxis: { categories: nuevosPeriodos },
-      title: { text: 'Promedios', align: 'center' }
-    });
-
-    this.chart?.updateSeries(nuevasSeries);
-    this.chart3options = {
-      series: [
-        {
-          name: "chart3",
-          data: nuevasSeries
-        }
-      ],
-      chart: {
-        id: "yt",
-        group: "social",
-        type: "area",
-        height: 160
-      },
-      colors: ["#00E396"],
-      yaxis: {
-        tickAmount: 2,
-        labels: {
-          minWidth: 40
-        }
-      }
-    };
   }
-  
 
-  graficoComparativo(){
-    const periodos: string[] = [];
-    const seriesMap: { [institucion: string]: number[] } = {};
-
-    // 1. recolectar periodos únicos
-    this.datosfiltrados.forEach(dato => {
-      const periodo = String(dato.PERIODO);
-      if (!periodos.includes(periodo)) {
-        periodos.push(periodo);
-      }
-    });
-
-    // 2. llenar series por institución
-    this.datosfiltrados.forEach(dato => {
-      const area = this.areaSeleccionada.replace('PROM. ','')
-      // const institucion = ''+dato.INSTITUCION+' - '+area;
-      const institucion = area;
-      const promedio = Number(dato[this.areaSeleccionada]);
-      const periodoIndex = periodos.indexOf(String(dato.PERIODO));
-
-      if (!seriesMap[institucion]) {
-        // inicializar con ceros o nulls para todos los periodos
-        seriesMap[institucion] = new Array(periodos.length).fill(null);
-      }
-
-      // asignar el promedio en la posición del periodo
-      seriesMap[institucion][periodoIndex] = promedio;
-    });
-
-    // 3. convertir a formato ApexCharts
-    const series = Object.keys(seriesMap).map(inst => ({
-      name: inst,
-      data: seriesMap[inst]
-    }));
-
-    // 4. setear chartOptions
+  private inicializarGrafico(): void {
     this.chartOptions = {
-      series: series,
-      fill: { type: 'gradient' },
+      series: [],
       chart: {
-        id: "yt",
-        group: "social",
-        type: "area",
-        height: 500
+        type: 'area',
+        height: 450,
+        zoom: {
+          enabled: false,
+          autoScaleYaxis: false
+        },
+        toolbar: {
+          show: true,
+          tools: {
+            download: true,
+            selection: false,
+            zoom: false,
+            zoomin: false,
+            zoomout: false,
+            pan: false,
+            reset: false
+          }
+        }
       },
-      title: {
-        text: this.areasbotonSeccionado, align: 'center'
+      colors: ['#4ECDC4', '#FF6B6B', '#FFE66D'],
+      stroke: {
+        curve: 'smooth',
+        width: 3
       },
-      xaxis: {
-        title: { text: "Periodo" },
-        categories: periodos
+      markers: {
+        size: 4,
+        hover: {
+          size: 7,
+          sizeOffset: 3
+        }
+      },
+      fill: {
+        opacity: 0.9,
+        type: 'gradient',
+        gradient: {
+          shade: 'light',
+          type: 'vertical',
+          shadeIntensity: 0.2,
+          opacityFrom: 1,
+          opacityTo: 0.8,
+          stops: [0, 90, 100]
+        }
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: (val: number) => val.toFixed(1)
       },
       yaxis: {
-        title: { text: "Promedio" },
+        title: { text: 'Promedio' },
         min: 0,
         max: 100,
-        tickAmount: 5,
         labels: {
-          formatter: (val) => val.toFixed(1)
+          formatter: (val: number) => val.toFixed(1)
         }
       },
-      tooltip: {
-        y: {
-          formatter: (val) => val.toFixed(1)
-        }
+      xaxis: {
+        type: 'category',
+        title: { text: 'Periodos' }
       }
     };
-    const seriesArray = Object.keys(seriesMap).map(institucion => ({
-      name: institucion,
-      data: seriesMap[institucion]
-    }));
-    setTimeout(()=>{
-
-      this.actualizarGraficoComparativo(periodos, seriesArray)
-    },200);
   }
-  //  public generateDayWiseTimeSeries(baseval:any, count: any, yrange:any): any[] {
-  //   let i = 0;
-  //   let series = [];
-  //   while (i < count) {
-  //     var x = baseval;
-  //     var y =
-  //       Math.floor(Math.random() * (yrange.max - yrange.min + 1)) + yrange.min;
 
-  //     series.push([x, y]);
-  //     baseval += 86400000;
-  //     i++;
-  //   }
-  //   return series;
-  // }
+  graficoComparativo(): void {
+    if (!this.datos || !this.areaSeleccionada) {
+      return;
+    }
+
+    console.log('Generando gráfico para:', this.areaSeleccionada);
+
+    // Obtener periodos únicos
+    const periodos = [...new Set(this.datos.map(d => d.PERIODO))].sort();
+    
+    // Obtener datos del área seleccionada
+    const promedios = periodos.map(periodo => {
+      const datoPeriodo = this.datos.find(d => d.PERIODO === periodo);
+      return datoPeriodo ? Number(datoPeriodo[this.areaSeleccionada]) : null;
+    });
+
+    console.log('Datos procesados:', {
+      periodos,
+      promedios
+    });
+
+    // Actualizar el gráfico
+    this.chartOptions = {
+      ...this.chartOptions,
+      series: [{
+        name: this.areasbotonSeccionado,
+        data: promedios
+      }],
+      xaxis: {
+        categories: periodos,
+        title: { text: 'Periodos' }
+      },
+      title: {
+        text: `Evolución de ${this.areasbotonSeccionado}`,
+        align: 'center'
+      }
+    };
+
+    // Forzar actualización del gráfico
+    if (this.chart) {
+      this.chart.updateOptions(this.chartOptions);
+    }
+  }
 }
