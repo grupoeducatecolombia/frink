@@ -4,21 +4,12 @@
     @for (area of areas; track area) {
       <button 
         (click)="seleccionarArea(area)"
-        [class.bg-blue-600]="areaSeleccionada === area"
-        [class.bg-gray-200]="areaSeleccionada !== area"
-        [class.text-white]="areaSeleccionada === area"
-        [class.text-gray-700]="areaSeleccionada !== area"
+        [class.bg-blue-600]="areasbotonSeccionado === area"
+        [class.bg-gray-200]="areasbotonSeccionado !== area"
+        [class.text-white]="areasbotonSeccionado === area"
+        [class.text-gray-700]="areasbotonSeccionado !== area"
         class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:shadow-md"
       >
-        <span class="mr-1">
-          @switch (area) {
-            @case ('MATEMATICAS') { 📊 }
-            @case ('LECTURA') { 📚 }
-            @case ('NATURALES') { 🔬 }
-            @case ('SOCIALES') { 🌍 }
-            @case ('INGLES') { 🗣️ }
-          }
-        </span>
         {{area}}
       </button>
     }
