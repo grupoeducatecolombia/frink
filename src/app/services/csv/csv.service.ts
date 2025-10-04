@@ -12,7 +12,12 @@ export class CsvService {
   constructor(private http: HttpClient) {}
 
   loadCsv(path: string): Observable<any[]> {
-    return this.http.get(path, { responseType: 'text' }).pipe(
+    // Ajustar la ruta para GitHub Pagesadd
+    const adjustedPath = path
+    
+    console.log('Loading CSV from:', adjustedPath);
+    
+    return this.http.get(adjustedPath, { responseType: 'text' }).pipe(
       map(csvData => {
         const parsed = Papa.parse(csvData, {
           header: true,
